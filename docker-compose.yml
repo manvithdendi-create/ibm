@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DEBUG=false
+      - DATABASE_URL=sqlite:///./travelmate.db
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - GRANITE_MODEL=granite3.2:4b
+      - OLLAMA_TIMEOUT=120
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY:-}
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:80,http://frontend
+      - DEMO_MODE=${DEMO_MODE:-false}
+    volumes:
+      - backend_data:/app
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Ollama for AI inference
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # For CPU-only, remove the deploy section above
+
+volumes:
+  backend_data:
+  ollama_data:
+
+networks:
+  default:
+    name: travelmate-network

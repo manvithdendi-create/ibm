@@ -1,0 +1,31 @@
+﻿# Node / frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.*
+
+# Python / backend
+backend/venv/
+backend/.env
+backend/.env.*
+backend/__pycache__/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+
+# Database / local state
+*.db
+*.sqlite3
+backend/travelmate.db
+backend/*.db
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Logs
+*.log
